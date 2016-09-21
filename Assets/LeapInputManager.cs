@@ -25,7 +25,7 @@ public class LeapInputManager : MonoBehaviour {
 	/*---------------------
 	 * 
 	 * This manager is for working with the leap's quirky input scheme.
-	 * The main purpose here is to point the currently existing 
+	 * The main purpose here is to point the currently existing hand
 	 *
 	 ----------------------*/
 
@@ -65,6 +65,7 @@ public class LeapInputManager : MonoBehaviour {
 		
 		frame=handControl.GetImageFrame();
 
+		//assign the handRotation vector depending on the existance of a left hand
 		if(frame.Hands.Count==1 && frame.Hands[0].IsLeft){
 			rotScript.handRot= frame.Hands.Leftmost.PalmVelocity;
 		}
