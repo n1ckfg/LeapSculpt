@@ -21,9 +21,12 @@ The Code
 
 Working with the Leap unity tools can get tricky if you want a custom kind of input, basically in our case we want to send OnPinch messages to the mesh target, register where you started pinching, and pull some specific vertices along the Vector3 direction to where you're currently pinching.
 
-SculptVerts.cs, which is a persistent static instance for sculpting, handles mesh deformation by cycling through all the verts every frame, moving ones in a range of your pinch if you're pinching '
+**SculptVerts.cs**, which is a persistent static instance for sculpting, handles mesh deformation by cycling through all the verts every frame, moving ones in a range of your pinch if you're pinching. It has an enum for different kinds of deform patterns which can be set through the UI.
 
-has an enum for different kinds of deform patterns (flat, exponential falloff, sin-based falloff and so on) which can be set through the UI. Depending on the sculpt pattern
+**SculptHand.cs** is the main input component, which is a modification of Leap's included PinchingHand.cs. It sends OnPinch and OnRelease triggers to:
 
+**LeapInputManager.cs**, which sends them along to the sculpt object and the ui handles. It also assigns the current hand object to SculptVerts, so it knows where to get the pinch position from.
 
 The UI is under the BrushSelectors and MeshSelectors objects, upon which GrabbableUI.cs enables you to pinch the handles to bring up the UI.
+
+**To load in other meshes,** import your models and stick them in the Meshes[] array in SculptVerts.cs to add it to the list that gets cycled through with the ui arrows. Check the scale of your mesh to make sure it shows up at a reasonable size, then try it out!
