@@ -162,13 +162,14 @@ public class SculptingHand : MonoBehaviour {
 
 
 	void FixedUpdate() {
+		if(SculptVerts.instance.hand==null){
+			SculptVerts.instance.hand=this;
+		}
+
+
+
 		UpdatePalmRotation();
 		UpdatePinchPosition();
-
-
-		//set
-
-	//	sculptTarget.currentPinchingSpot=filtered_pinch_position_;
 
 
 

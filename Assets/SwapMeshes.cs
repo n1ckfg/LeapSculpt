@@ -7,26 +7,31 @@ public class SwapMeshes : MonoBehaviour {
 
 	MeshRenderer mesh;
 
-	public bool partyMode=false;
-	public float speed;
-
 	public Material[] mats;
+	public bool matToggle=false;
 	public int matNum;
 	void Start () {
 
 		mesh =GetComponent<MeshRenderer>();
 
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
-		mesh.material=mats[matNum];
-		if(partyMode){
-			float val = mesh.sharedMaterial.GetFloat("_node_2236");
-			val+=speed;
-			mesh.sharedMaterial.SetFloat("_node_2236",val);
+		if(matToggle){
+			matNum=0;
 		}
+		else{
+			matNum=1;
+		}
+		mesh.material=mats[matNum];
+		SculptVerts.instance.gameObject.GetComponent<MeshRenderer>().material=mats[matNum];
 
 	}
+
+	void OnTriggerEnter(){
+		matToggle =!matToggle;
+	}
 }
+

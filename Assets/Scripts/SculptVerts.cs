@@ -86,10 +86,7 @@ public class SculptVerts : MonoBehaviour {
 		//remap the slider to these hard coded values of ranges of influence
 		pullSize=brushSize.sliderValue.Remap(0f,1f,.5f,3f);
 		pullStrength=brushStrength.sliderValue.Remap(0f,1f,.2f,1.2f);
-
-		if(Input.GetKeyDown(KeyCode.U)){
-			StartCoroutine("LerpVerts");
-		}
+	
 
 		//only cycle through the verts if we have a sculptingHand and the hand is pinching!
 		if(hand != null && hand.pinching){
@@ -102,9 +99,9 @@ public class SculptVerts : MonoBehaviour {
 			//this vector is useful for knowing which way to offset verts, it's just the vector from where the pinch started to where it is now
 			Vector3 dragVector=currentPinchingSpot-startPinchSpot;
 
+			if(baseVertices!=null){
 			for (int i=0;i<tempVertices.Length;i++)
 		{
-
 			//since there's other vectors involved, we'd either need to translate everything to local vectors or just handle the vertex position in world space
 			//so first we TransformPoint, tweak the verts, then InverseTransformPoint to put them back in positions the mesh will understand
 			Vector3 vertexToSculpt = transform.TransformPoint(baseVertices[i]);
@@ -116,7 +113,6 @@ public class SculptVerts : MonoBehaviour {
 			if(distFromStartPinch<pullSize){
 
 					switch(sculptType){
-
 					case(SculptTypes.LinearFalloff):
 						vertexToSculpt+=dragVector * (pullSize-distFromStartPinch)*pullStrength;
 						break;
@@ -133,7 +129,6 @@ public class SculptVerts : MonoBehaviour {
 						vertexToSculpt+=dragVector * (Mathf.Sin((pullSize-distFromStartPinch)/sinScale).Remap(-1f,1f,0f,1f));
 						break;
 					}
-
 			}
 				//back to local space for the mesh
 				tempVertices[i] =transform.InverseTransformPoint(vertexToSculpt);
@@ -141,7 +136,7 @@ public class SculptVerts : MonoBehaviour {
 			//finally, set the active mesh verts to the new verts, and RecalculateBounds makes sure new (possibly distant) parts of the mesh are drawn.
 			mesh.vertices = tempVertices;
 		mesh.RecalculateBounds();
-
+			}
 		}
 	
 	}
@@ -155,9 +150,11 @@ public class SculptVerts : MonoBehaviour {
 		baseVertices=tempVertices;
 	}
 
+	public void ResetMesh(){
+		StartCoroutine("LerpVerts");
+	}
 
 	IEnumerator LerpVerts(){
-		Debug.Log("yeP");
 		float j=0f;
 		Vector3[] currentVerts=tempVertices;
 

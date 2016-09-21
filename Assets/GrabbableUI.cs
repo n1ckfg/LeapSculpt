@@ -13,8 +13,8 @@ public class GrabbableUI : MonoBehaviour {
 	public float minY;
 	public float maxY;
 
-	bool toggleMovement;
-	bool canPinch=true;
+	public bool toggleMovement;
+	public bool canPinch=true;
 	public bool moveMeshAlso=false;
 
 	GameObject buttonManager;
@@ -26,52 +26,44 @@ public class GrabbableUI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		/*
-		hand = SculptVerts.instance.hand;
-		if(hand!=null){
-		if(hand.pinching && pinchInRange){
-				Vector3 pos= transform.position;
-				pos.y=hand.filtered_pinch_position_.y;
-				if(pos.y<=minY){
-					pos.y=minY;
-				}
-				else if(pos.y>=maxY){
-					pos.y=maxY;
-				}
-				transform.position=pos;
-		}
-		}
-		*/
 	}
-	/*
-	public void StopPinching(){
-		pinchInRange=false;
 
-		if(Vector3.Distance(pinchSpot,transform.position)<grabbableRange){
-			pinchInRange=true;
-		}
-	}
-	*/
 	public void OnPinch(Vector3 pinchSpot){
-		if(Vector3.Distance(pinchSpot,transform.position)<grabbableRange &&canPinch){
+		//check if you pinched in range of the handle
+		float dist =Vector3.Distance(pinchSpot,transform.position);
+		if(dist<grabbableRange &&canPinch){
 			canPinch=false;
+
 		if(!toggleMovement ){
-				buttonManager.SetActive(true);
-				if(moveMeshAlso)
-					SculptVerts.instance.transform.parent.DOBlendableMoveBy(Vector3.up*moveDist,1f).SetEase(Ease.OutCubic);
-				
-				transform.DOBlendableMoveBy(Vector3.up*moveDist,1f).SetEase(Ease.OutCubic).OnComplete(ToggleMovement);
-
-
+			buttonManager.SetActive(true);
+			MoveUpOrDown(true);
 		}
 			else{
-				buttonManager.SetActive(false);
-				transform.DOBlendableMoveBy(Vector3.down*moveDist,1f).SetEase(Ease.OutCubic).OnComplete(ToggleMovement);
+			buttonManager.SetActive(false);
+			MoveUpOrDown(false);
+		}
+		}
+		//if a pinch is registered out of range of the handle while it's up, hide the handle again
+		//very specific set of bools here, sorry if it's confusing. moveMeshalso makes this reset only happen for the mesh selector ui, which sas that bool disabled anyway
+		else if(dist>grabbableRange && toggleMovement && canPinch && !moveMeshAlso){
+			buttonManager.SetActive(false);
+			canPinch=false;
+			MoveUpOrDown(false);
+		}
+	}
 
-				if(moveMeshAlso)
-					SculptVerts.instance.transform.parent.DOBlendableMoveBy(Vector3.down*moveDist,1f).SetEase(Ease.OutCubic);
-		}
-		}
+	public void MoveUpOrDown(bool up){
+		Vector3 moveDir;
+		if(up)
+			moveDir=Vector3.up;
+		else
+			moveDir=Vector3.down;
+
+		transform.DOBlendableMoveBy(moveDir*moveDist,1f).SetEase(Ease.OutCubic).OnComplete(ToggleMovement);
+
+		if(moveMeshAlso)
+			SculptVerts.instance.transform.parent.DOBlendableMoveBy(moveDir*moveDist,1f).SetEase(Ease.OutCubic);
+
 	}
 
 	void ToggleMovement(){
