@@ -13,9 +13,6 @@ public class LeapRotate : MonoBehaviour {
 	public float drag = 0.9f;
 
 	Vector3 v3Rotation = Vector3.zero;
-
-	private float h = 0.0f;
-	private float v = 0.0f;
 	public bool canMove=false;
 	public float moveScale=2f;
 

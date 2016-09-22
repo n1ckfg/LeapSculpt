@@ -6,12 +6,15 @@ public class SculptVerts : MonoBehaviour {
 
 	public static SculptVerts instance;
 
+	//more sculpt modes to come 
 	public enum SculptTypes {LinearFalloff,ExponentialFalloff,CubicFalloff,Flat,SinFalloff,Sin,CustomCurve,Flatten};
 	public AnimationCurve customFalloffCurve;
-
 	public float sinScale=10f;
+
+	//this is the vert array of the resting positions, while you're not pinching but they're in new deformed positions
 	private Vector3[] baseVertices;
 
+	//this is the vert array that gets written to
 	private Vector3[] tempVertices;
 
 	//the verts to be set as they are at the very beginning, for the sake of resetting them
@@ -19,27 +22,27 @@ public class SculptVerts : MonoBehaviour {
 
 	public SculptTypes sculptType;
 
-
-	 Vector3 startPinchSpot;
+	//the vectors for pinch tracking
+	Vector3 startPinchSpot;
 	public Vector3 currentPinchingSpot;
 
+	//management from the UI Sliders
 	public SliderDemo brushSize;
 	public SliderDemo brushStrength;
 	public float pullSize=5f;
 	public float pullStrength=.5f;
 
-
-
+	//reset stuff
 	public float lerpVertTime=1f;
 	public AnimationCurve lerpInCurve;
 
-	public bool getClosestPinchSpotFirst=false;
-
+	//the mesh array!
 	public Mesh[] meshes;
 
 	public int meshNum=0;
 	public Mesh mesh;
 
+	//the reference to the sculpting hand, from which we get the current pinch spot
 	public SculptingHand hand;
 
 	void Awake()
@@ -53,6 +56,7 @@ public class SculptVerts : MonoBehaviour {
 
 
 	void Start(){
+		//get the mesh at the start, set the verts initially 
 		mesh=GetComponent<MeshFilter>().mesh;
 		mesh.MarkDynamic();
 
@@ -60,6 +64,7 @@ public class SculptVerts : MonoBehaviour {
 		baseVertices = mesh.vertices;
 	}
 		
+	//SwapMesh does what it sounds like, but also sets the verts to new initial values
 	public void SwapMesh(){
 		if(meshNum>=meshes.Length){
 			meshNum=0;
@@ -78,19 +83,17 @@ public class SculptVerts : MonoBehaviour {
 		tempVertices=null;
 	}
 
-	void Update () {
-		if(Input.GetKeyDown(KeyCode.Space)){
-			//SwapMesh();
-		}
 
+	// all the vert movement stuff is in here !
+	void Update () {
+		
 		//remap the slider to these hard coded values of ranges of influence
 		pullSize=brushSize.sliderValue.Remap(0f,1f,.5f,3f);
-		pullStrength=brushStrength.sliderValue.Remap(0f,1f,.2f,1.2f);
+		pullStrength=brushStrength.sliderValue.Remap(0f,1f,.5f,1.4f);
 	
-
-		//only cycle through the verts if we have a sculptingHand and the hand is pinching!
+		//only cycle through all the verts if we have a sculptingHand and the hand is pinching!
 		if(hand != null && hand.pinching){
-			//overwrite the temporary vertices 
+			//get the current vertices
 			tempVertices=mesh.vertices;
 
 			//get the current leap pinch positions from the SculptingHand
@@ -112,6 +115,7 @@ public class SculptVerts : MonoBehaviour {
 			//this is critical - we only want the verts within the "brush size" or desired range of influence for the pinch
 			if(distFromStartPinch<pullSize){
 
+						//the different stretch types, depending on the enum value we do different operations generally based on the distance from the center of the pinch.
 					switch(sculptType){
 					case(SculptTypes.LinearFalloff):
 						vertexToSculpt+=dragVector * (pullSize-distFromStartPinch)*pullStrength;
@@ -135,25 +139,23 @@ public class SculptVerts : MonoBehaviour {
 		}
 			//finally, set the active mesh verts to the new verts, and RecalculateBounds makes sure new (possibly distant) parts of the mesh are drawn.
 			mesh.vertices = tempVertices;
-		mesh.RecalculateBounds();
+			mesh.RecalculateBounds();
 			}
 		}
-	
 	}
 
+	//get pinch events from the LeapInputManager
 	public void OnPinch(Vector3 rawPinch){
-		Debug.Log("onpinch");
 		startPinchSpot=rawPinch;
 	}
-
 	public void StopPinching(){
 		baseVertices=tempVertices;
 	}
-
 	public void ResetMesh(){
 		StartCoroutine("LerpVerts");
 	}
 
+	//the coroutine to reset the verts! Basically we just cycle every vert a little bit at a time back the its starting position
 	IEnumerator LerpVerts(){
 		float j=0f;
 		Vector3[] currentVerts=tempVertices;
@@ -170,57 +172,5 @@ public class SculptVerts : MonoBehaviour {
 
 		}
 		baseVertices=currentVerts;
-
-	}
-
-
-
-	public void GetPinchSpot(Vector3 pinchSpot){
-		float currentClosest=1f;
-		int currentClosestVert=0;
-
-		for (int i=0;i<tempVertices.Length;i++)
-		{
-			float dist =Vector3.Distance(pinchSpot,transform.TransformPoint(tempVertices[i]));
-				if(dist<currentClosest){
-					currentClosest=dist;
-					currentClosestVert=i;
-				}
-		}
-		startPinchSpot= transform.TransformPoint(tempVertices[currentClosestVert]);
-	}
-/*
-	void OnDrawGizmos() {
-		Gizmos.color = Color.yellow;
-		Gizmos.DrawSphere(currentPinchingSpot,pullSize);
-	}
-	*/
-}
-
-	/*
-	public float GetPerlin(float x,float z){
-		float dist = Vector2.Distance(new Vector2(x, z), lavaSpot);
-		float extraHeight = 0 ;
-		if (dist <= lavaLampDistance)
-		{
-			extraHeight = Mathf.Pow((lavaLampDistance - 1-dist),2) * lavaCenterHeight * lavaGeneralScale;
-		}
-		return extraHeight + Mathf.PerlinNoise((x+perlinLocX)/slopeScaler,(z+perlinLocY)/slopeScaler)*scale-scale/3;
-
-	}
-
-	IEnumerator LavaGoopCalculation()
-	{
-		lavaSpot = lavaSpotSet;
-		float i = 0f;
-		while (i <= 1.1f)
-		{
-			lavaCenterHeight = lavaLampCurve.Evaluate(i);
-			i += Time.deltaTime / lavaLampDuration;
-			yield return null;
-		}
-
 	}
 }
-
-*/
