@@ -20,15 +20,19 @@ public class LeapRotate : MonoBehaviour {
 	//public Hand rotatingHand;
 
 	void Update () {
-
+		
 		if(handRot!=null){
 		v3Rotation.y += horizontalSpeed * handRot.x;
-		v3Rotation.x -= verticalSpeed   *handRot.y;      
+		v3Rotation.x -= verticalSpeed * handRot.y;      
 		}
 
 
 		v3Rotation *= drag;
-		transform.Rotate (v3Rotation);
+
+		transform.Rotate (v3Rotation,Space.World);
+
+	//	v3Rotation.y=horizontalSpeed*handRot.y;
+	//	v3Rotation.x=horizontalSpeed*handRot.x;
 
 		if(canMove){
 			transform.Translate(new Vector3(Input.GetAxis("Horizontal"),0f,Input.GetAxis("Vertical"))*moveScale);
