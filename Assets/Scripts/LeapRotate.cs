@@ -22,8 +22,8 @@ public class LeapRotate : MonoBehaviour {
 	void Update () {
 		
 		if(handRot!=null){
-		v3Rotation.y += horizontalSpeed * handRot.x;
-		v3Rotation.x -= verticalSpeed * handRot.y;      
+		v3Rotation.y += horizontalSpeed * -handRot.x;
+		v3Rotation.x -= verticalSpeed * -handRot.y;      
 		}
 
 
